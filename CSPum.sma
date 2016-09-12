@@ -130,7 +130,8 @@ public remkey( id, level, cid )
 		client_print( id, 2, "Sorry, this key is not saved yet." );
 		return PLUGIN_HANDLED;
 	}
-
+	
+	client_print( id, 2, "You succesfully removed %s from list!", Arg1 );
 	nvault_remove( gNewVault, adder );
 
 	return PLUGIN_HANDLED;
