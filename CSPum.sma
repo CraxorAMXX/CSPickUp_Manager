@@ -14,9 +14,35 @@ new const PLUGIN[]    = "CS Pick up manager",
 
 new const gKeyList[ ] [ ] =
 {
+	"========== All weapons-key avaible to add to add in list ========== ",
+	"p228",
+	"shield",
+	"scout",
+	"hegrenade",
+	"xm1014",
+	"c4",
+	"mac10",
+	"aug",
+	"smokegrenade",
+	"elite",
+	"fiveseven",
+	"ump45",
+	"sg550",
+	"galil",
+	"famas",
+	"usp",
+	"glock18",
+	"mp5navy",
+	"m249",
+	"m3",
 	"m4a1",
-	"awp",
-	"deagle"
+	"tmp",
+	"g3sg1",
+	"flashbang",
+	"deagle",
+	"sg552",
+	"ak47",
+	"p90"
 };
 
 new giTypeCvar;
@@ -41,7 +67,7 @@ public plugin_init( )
 
 	register_clcmd( "amx_cspum_keylist", "_ShowKeyLists" );
 
-	giTypeCvar = register_cvar("cspum_type", "1" );
+	giTypeCvar = register_cvar("cspum_type", "2" );
 
 	register_touch("armoury_entity", "player", "OnPlayerTouchArmoury"); 
 	register_touch("weaponbox", "player", "OnPlayerTouchWeaponBox"); 
@@ -60,18 +86,27 @@ public addkey( id, level, cid )
 	new adder[64];
 	formatex( adder, charsmax( adder ), "models/w_%s.mdl", Arg1 );
 
-	new i;
-	for( i=0; i < sizeof ( gKeyList ); i++ )
-	
-	if ( !equali( adder, gKeyList[i] ) )
+	new szVaultData[ 60 ] , iTS;
+    
+	if( nvault_lookup( gNewVault, adder , szVaultData, charsmax( szVaultData ) , iTS ) )
 	{
-		client_print( id , 2, "Unnable to found this key, type amx_cspum_keylist for all keys avaible to insert." );
+		client_print( id, 2, "This key is already saved in the pick up manager list." );
 		return PLUGIN_HANDLED;
 	}
-	else
-	{	
-		nvault_set( gNewVault, adder , "1" );
-		return PLUGIN_HANDLED;
+
+	for( new i=0; i < sizeof ( gKeyList ); i++ )
+	{
+		if ( !containi( gKeyList[i], Arg1 ) )
+		{
+			client_print( id , 2, "Unnable to found this key, type amx_cspum_keylist for all keys avaible to insert." );
+			return PLUGIN_HANDLED;
+		}
+		else
+		{	
+			client_print( id , 2, "You succesfully added %s in list!", Arg1 );
+			nvault_set( gNewVault, adder , "1" );
+			return PLUGIN_HANDLED;
+		}
 	}
 	
 	return PLUGIN_HANDLED;
@@ -88,6 +123,14 @@ public remkey( id, level, cid )
  	new adder[64];
 	formatex( adder, charsmax( adder ), "models/w_%s.mdl", Arg1 );
 
+	new szVaultData[ 60 ] , iTS;
+    
+	if( !nvault_lookup( gNewVault, adder , szVaultData, charsmax( szVaultData ) , iTS ) )
+	{
+		client_print( id, 2, "Sorry, this key is not saved yet." );
+		return PLUGIN_HANDLED;
+	}
+
 	nvault_remove( gNewVault, adder );
 
 	return PLUGIN_HANDLED;
@@ -102,7 +145,7 @@ public _ShowKeyLists( id )
 	}
 
 	for( new i = 0; i < sizeof( gKeyList ); i++ )
-		client_print( id, 2, "%s,^n", gKeyList[i] );
+		client_print( id, 2, " %s", gKeyList[i] );
 
 	return PLUGIN_HANDLED;
 }
