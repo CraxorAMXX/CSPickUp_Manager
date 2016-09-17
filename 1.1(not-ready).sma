@@ -77,8 +77,8 @@ public plugin_init( )
 	register_concmd( "amx_cspum_addkey" , "addkey" , ADMIN_BAN , " < Weapon key-name to block > " ); 
 	register_concmd( "amx_cspum_remkey" , "remkey" , ADMIN_BAN , " < Weapon key-name to block > " );
  
-	register_concmd( "amx_cspum_block_all" , "addallkey" , ADMIN_BAN , " You've blocked all keys from the list! " );
-	register_concmd( "amx_cspum_reset" , "remallkey" , ADMIN_BAN , " The keylist has been reseted!" );
+	register_concmd( "amx_cspum_block_all" , "block_all" , ADMIN_BAN , " You've blocked all keys from the list! " );
+	register_concmd( "amx_cspum_reset" , "reset" , ADMIN_BAN , " The keylist has been reseted!" );
 
 	/*   To do
 	====
@@ -206,7 +206,7 @@ public remkey( id, level, cid )
 	return PLUGIN_HANDLED; 
 } 
 
-public addallkey( id, level, cid )
+public block_all( id, level, cid )
 { 
 	if( !cmd_access( id , level , cid , 1 ) ) 
 		return PLUGIN_HANDLED; 
@@ -219,11 +219,12 @@ public addallkey( id, level, cid )
 		gBlockWeapons |= ( 1 << i );
 
 		nvault_set( gNewVault , szModelFile , "1" );  
-	}  	 
+	} 
+	client_print( id, print_console, "All the weapons have been added inside of the list!" ); 	 
 	return PLUGIN_HANDLED; 
 }
 
-public remallkey( id, level, cid )
+public reset( id, level, cid )
 {
 	if( !cmd_access( id , level , cid , 1 ) ) 
 		return PLUGIN_HANDLED;
@@ -232,9 +233,7 @@ public remallkey( id, level, cid )
 	nvault_prune( gNewVault, 0, get_systime( ) );
 	client_print( id, print_console, "You've succesfully reseted all the list!" );
 
-	// We update the bitfield.
-	for( new i = 33; i >= sizeof ( gKeyList ) ; i-- ) 
-		gBlockWeapons = ( 1 << 0 );
+	gBlockWeapons = 0;
 		
 
 	return PLUGIN_HANDLED;
