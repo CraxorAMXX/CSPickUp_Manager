@@ -214,11 +214,14 @@ public block_all( id, level, cid )
 	new szModelFile[ 12 + 14 ]; 
 
 	for( new i = 0 ; i < sizeof ( gKeyList ) ; i++ ) 
-	{ 
-		formatex( szModelFile , charsmax( szModelFile ), gModelFile , gKeyList[ i ] );
-		gBlockWeapons |= ( 1 << i );
+	{
+		if ( !( gIgnoreWeapons & ( 1 << i ) ) )
+        	{
+			formatex( szModelFile , charsmax( szModelFile ), gModelFile , gKeyList[ i ] );
+			gBlockWeapons |= ( 1 << i );
 
-		nvault_set( gNewVault , szModelFile , "1" );  
+			nvault_set( gNewVault , szModelFile , "1" );  
+		}
 	} 
 	client_print( id, print_console, "All the weapons have been added inside of the list!" ); 	 
 	return PLUGIN_HANDLED; 
