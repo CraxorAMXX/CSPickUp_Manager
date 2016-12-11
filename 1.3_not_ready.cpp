@@ -7,7 +7,7 @@
 #include <hamsandwich> 
 
 new const PLUGIN[] = "CS Pick up manager", 
-	 VERSION[] = "1.2",  
+	 VERSION[] = "1.3",  
 	  AUTHOR[] = "Craxor";
       
 new const gKeyList[][] = 
@@ -430,7 +430,7 @@ GetWeaponIndex(id, const szKeyword[], FunctionType:Type)
 		}
 		case GWI_Duplicate:
 		{	
-			client_print( id , print_console, "Please be more specific with the weapon you want to add/remove, type amx_cspum_blockedlist / amx_cspum_keylist to check for weapons." , szKeyword ); 
+			client_print( id , print_console, "Please be more specific with the weapon you want to add/remove, type amx_cspum_blockedlist / amx_cspum_keylist." , szKeyword ); 
 			iReturn = GWI_NotFound; 
 		}
 		default:
