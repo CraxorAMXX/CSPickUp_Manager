@@ -4,11 +4,13 @@
 #include <nvault> 
 #include <engine> 
 #include <cstrike> 
-#include <hamsandwich> 
+#include <hamsandwich>
+ 
 
 new const PLUGIN[] = "CS Pick up manager", 
-	 VERSION[] = "1.3",  
+	 VERSION[] = "1.3.1",  
 	  AUTHOR[] = "Craxor";
+
       
 new const gKeyList[][] = 
 { 
@@ -43,35 +45,23 @@ new const gKeyList[][] =
 	"ak47" , 
 	"" , 
 	"p90" , 
-	"shield",
-	"kevlar"
-
+	"vest",
+	"vesthelm",
+	"shield"
 }; 
 
 
-new const g_ArmouryTypes[] = 
+new const ShowMessages[][] = 
 {
-    CSW_MP5NAVY ,
-    CSW_TMP ,
-    CSW_P90 , 
-    CSW_MAC10 ,
-    CSW_AK47 , 
-    CSW_SG552 , 
-    CSW_M4A1 , 
-    CSW_AUG , 
-    CSW_SCOUT , 
-    CSW_G3SG1 , 
-    CSW_AWP , 
-    CSW_M3 , 
-    CSW_XM1014 , 
-    CSW_M249 , 
-    CSW_FLASHBANG , 
-    CSW_HEGRENADE , 
-    CSW_VEST , 
-    CSW_VESTHELM , 
-    CSW_SMOKEGRENADE
-}; 
-
+	" ~ Conter-Strike Pick Up Manager Commands to use ~ ",
+	"amx_cspum_addkey < Key to Block >",
+	"amx_cspum_remkey < Key to Remov >",
+	"amx_cspum_keylist",
+	"amx_cspum_blocklist",
+	"amx_cspum_blockedlist",
+	"amx_cspum_resetlist" 
+};
+ 
 
 enum WeaponTypes
 {
@@ -101,22 +91,24 @@ enum _:GetWeaponIndexValues
 	GWI_Duplicate
 }
 
+
 new giTypeCvar; 
 new gNewVault; 
 
+
 new gBlockWeapons;  
-new gIgnoreWeapons = ( ( 1 << 0 ) | ( 1 << 2 ) | ( 1 << 18 ) | ( 1 << 29 ) ); 
 
 new const gModelFile[] = "models/w_%s.mdl";  
 
-const CSW_SHIELD = 31; 
+const CSW_SHIELD = 33; 
 const XoCArmoury = 4 
 const m_iCount = 35
-const m_iType = 34;
+
 
 #define IsArmoury(%1)        (%1[0]=='a'&&%1[1]=='r'&&%1[7]=='_'&&%1[8]=='e'&&%1[12]=='t'&&%1[13]=='y')  
 #define IsWpBox(%1)        (%1[0]=='w'&&%1[1]=='e'&&%1[5]=='n'&&%1[7]=='o'&&%1[8]=='x')
 #define IsAShield(%1)        (%1[0]=='w'&&%1[1]=='e'&&%1[7]=='s'&&%1[8]=='h'&&%1[9]=='i'&&%1[11]=='l'&&%1[12]=='d') 
+
 
 public plugin_init( ) 
 { 
@@ -135,11 +127,13 @@ public plugin_init( )
 	register_concmd( "amx_cspum_addkey" , "addkey" , ADMIN_BAN , " < Weapon key-name to block > " ); 
 	register_concmd( "amx_cspum_remkey" , "remkey" , ADMIN_BAN , " < Weapon key-name to block > " );
  
-	register_concmd( "amx_cspum_blocklist" , "block_all" , ADMIN_BAN  );
-	register_concmd( "amx_cspum_resetlist" , "reset" , ADMIN_BAN  );
+	register_concmd( "amx_cspum_blocklist" , "blockall" , ADMIN_BAN  );
+	register_concmd( "amx_cspum_resetlist" , "resetall" , ADMIN_BAN  );
 
 	register_concmd( "amx_cspum_keylist" , "showkeylist" , ADMIN_BAN ); 
 	register_concmd( "amx_cspum_blockedlist", "blockedlist" , ADMIN_BAN );
+
+	register_concmd( "amx_cspum", "cspumcmd" , ADMIN_BAN );
 
 	new EntityPlayerClass [] = "player";
 	
@@ -156,13 +150,14 @@ public plugin_init( )
 	giTypeCvar = register_cvar( "cspum_type" , "2" ); 
 } 
 
+
 public plugin_cfg() 
 { 
 	new szModel[ 12 + 14 ] , szVal[ 2 ] , iTS; 
 	
 	for( new i = 1 ; i < sizeof gKeyList ; i++ ) 
 	{ 
-		if ( !( gIgnoreWeapons & ( 1 << i ) ) ) 
+		if ( gKeyList[ i ][ 0 ] != EOS ) 
 		{ 
 			formatex( szModel , charsmax( szModel ) , gModelFile , gKeyList[ i ] ); 
 			
@@ -174,10 +169,12 @@ public plugin_cfg()
 	} 
 } 
 
+
 public plugin_end()  
 { 
 	nvault_close( gNewVault );  
 } 
+
 
 public addkey( id , level , cid ) 
 { 
@@ -205,9 +202,10 @@ public addkey( id , level , cid )
 }
 
 
-public remkey( id, level, cid ) 
+
+public remkey( id , level , cid ) 
 { 
-	if( !cmd_access( id, level, cid, 2 ) ) 
+	if( !cmd_access( id , level , cid , 2 ) ) 
 		return PLUGIN_HANDLED; 
 	
 	new szWeaponArg[ 13 ] , szModelFile[ 12 + sizeof( gModelFile ) ] , iFoundIndex , iEntity; 
@@ -224,7 +222,7 @@ public remkey( id, level, cid )
 	{
 		while ( ( iEntity = find_ent_by_class( iEntity , "armoury_entity" ) ) )
 		{
-			if ( ( g_ArmouryTypes[get_pdata_int( iEntity , m_iType , XoCArmoury ) ]  == iFoundIndex ) && pev_valid( iEntity ) )
+			if ( pev_valid( iEntity ) && cs_get_armoury_type( iEntity ) == iFoundIndex )
 				ExecuteHam( Ham_CS_Restart , iEntity );
 		}
 	}
@@ -239,7 +237,8 @@ public remkey( id, level, cid )
 	return PLUGIN_HANDLED; 
 } 
 
-public block_all( id, level, cid )
+
+public blockall( id , level , cid )
 { 
 	if( !cmd_access( id , level , cid , 1 ) ) 
 		return PLUGIN_HANDLED; 
@@ -249,7 +248,7 @@ public block_all( id, level, cid )
 
 	for( new i = 1 ; i < sizeof gKeyList ; i++ ) 
 	{
-		if ( !( gIgnoreWeapons & ( 1 << i ) ) && !( gBlockWeapons & ( 1 << i ) ) )
+		if ( gKeyList[ i ][ 0 ] != EOS && !( gBlockWeapons & ( 1 << i ) ) )
 		{
 			formatex( szModelFile , charsmax( szModelFile ), gModelFile , gKeyList[ i ] );
 			gBlockWeapons |= ( 1 << i );
@@ -263,7 +262,8 @@ public block_all( id, level, cid )
 	return PLUGIN_HANDLED; 
 }
 
-public reset( id, level, cid )
+
+public resetall( id , level , cid )
 {
 	if( !cmd_access( id , level , cid , 1 ) ) 
 		return PLUGIN_HANDLED;
@@ -277,7 +277,7 @@ public reset( id, level, cid )
 	{
 		while ( ( iEntity = find_ent_by_class( iEntity , "armoury_entity" ) ) )
 		{
-			if ( ( g_ArmouryTypes[get_pdata_int( iEntity , m_iType , XoCArmoury ) ] ) && pev_valid( iEntity ) )
+			if ( pev_valid( iEntity ) && cs_get_armoury_type( iEntity ) )
 				ExecuteHam( Ham_CS_Restart , iEntity );
 		}
 	}
@@ -287,23 +287,25 @@ public reset( id, level, cid )
 	return PLUGIN_HANDLED;
 }
 
+
 public showkeylist( id , level, cid ) 
 { 
-	if( !cmd_access( id, level, cid, 1 ) ) 
+	if( !cmd_access( id , level , cid , 1 ) ) 
 		return PLUGIN_HANDLED;
 	
 	client_print( id , print_console , "========== All weapons available to add to the list ========== " ); 
 	
 	for( new i = 1; i < sizeof gKeyList ; i++ ) 
 	{ 
-		if ( gKeyList[ i ][ 0 ] && !( gIgnoreWeapons & ( 1 << i ) ) ) 
+		if ( gKeyList[ i ][ 0 ] ) 
 			client_print( id , print_console , " %s" , gKeyList[ i ]  ); 
 	} 
 	
 	return PLUGIN_HANDLED; 
 } 
 
-public blockedlist( id, level, cid )
+
+public blockedlist( id , level , cid )
 {
 	if( !cmd_access( id , level, cid, 1 ) )
 		return PLUGIN_HANDLED;
@@ -312,25 +314,37 @@ public blockedlist( id, level, cid )
 
 	for( new i = 1; i < sizeof gKeyList ; i++ )
 	{
-		if ( gKeyList[ i ][ 0 ] && ( gBlockWeapons & ( 1 << i ) ) )
+		if ( gKeyList[ i ][ 0 ] != EOS && ( gBlockWeapons & ( 1 << i ) ) )
 				client_print( id , print_console , "%s", gKeyList[ i ] );
 	}
 	return PLUGIN_HANDLED;
 }
 
+public cspumcmd( id , level , cid )
+{
+	if( !cmd_access( id , level, cid, 1 ) )
+		return PLUGIN_HANDLED;
+
+	for( new i = 0; i < sizeof ShowMessages ; i++ )
+		client_print( id , print_console , ShowMessages[ i ] );
+
+	return PLUGIN_HANDLED;
+}
+
+
 public player_touch( ent , id )  
 {  
-	if( !pev_valid( ent ) || !id || !( pev( ent , pev_flags) & FL_ONGROUND ) )  
+	if( !pev_valid ( ent ) || !id || !( pev( ent , pev_flags ) & FL_ONGROUND ) )  
 		return -1; 
 	
-	new iWeaponID , szClassName[ 15 ] , WeaponTypes:wtType; 
+	new iWeaponID , szClassName[ 15 ], WeaponTypes:wtType;
 	
 	pev( ent , pev_classname , szClassName , charsmax( szClassName ) ); 
 
 	
 	if( IsArmoury( szClassName ) )
 	{
-		iWeaponID = g_ArmouryTypes[get_pdata_int( ent , m_iType , XoCArmoury ) ];
+		iWeaponID = cs_get_armoury_type( ent );
 		wtType = WT_Armoury;
 	}
 	else if ( IsWpBox( szClassName ) )
@@ -369,26 +383,21 @@ public player_touch( ent , id )
 					
 				}
 			}
-			case BT_BlockPickup: 
-			{	
-				return PLUGIN_HANDLED; 
-			}
-			default: 
-			{
-				return PLUGIN_CONTINUE; 
-			}
+			case BT_BlockPickup: return PLUGIN_HANDLED;
+			default: return PLUGIN_CONTINUE;
 		} 
 	} 
 	
 	return PLUGIN_CONTINUE; 
 }  
 
+
 cs_get_weaponbox_type( iWeaponBox ) 
 { 
 	new iWeapon 
 	new const m_rgpPlayerItems_CWeaponBox[ 6 ] = { 34 , 35 , ... };  
 
-	for ( new i = 1 ; i <= 5 ; i++ ) 
+	for ( new i = 1 ; i < sizeof m_rgpPlayerItems_CWeaponBox ; i++ ) 
 	{ 
 		if( ( iWeapon = get_pdata_cbase( iWeaponBox , m_rgpPlayerItems_CWeaponBox[ i ] , XoCArmoury ) ) > 0 ) 
 		{ 
@@ -398,6 +407,7 @@ cs_get_weaponbox_type( iWeaponBox )
 
 	return 0 
 }
+
 
 GetWeaponIndex(id, const szKeyword[], FunctionType:Type)
 {
