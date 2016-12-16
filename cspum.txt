@@ -1,0 +1,21 @@
+[en]
+KEY_ADDED = You successfully added '%s' to the list!
+KEY_REMOVED = You removed added '%s' to the list!
+WEAPONS_BLOCKED = All the weapons have been blocked.
+AVAIBLE_WEAPONS = List of all avaible/existing weapons
+BLOCKED_WEAPONS = List of all blocked weapons
+WEAPON_NOTFOUND = Unable to find the key '%s', type amx_cspum_keylist for all keys available to insert.
+WEAPON_NOTSPECIFIED = Please be more specific with the weapon you want to add/remove, type amx_cspum_blockedlist / amx_cspum_keylist.
+ALREADY_SAVED = '%s' is already saved in the pick up manager list.
+ALREADY_REMOVED = '%s' is not currently in the pick up manager list.
+
+[ro]
+KEY_ADDED = Ai adaugat cu succes '%s' in lista.
+KEY_REMOVED = Ai scos cu succes '%s' din lista de blocare.
+WEAPONS_BLOCKED = Toate armele au fost blocate cu succes.
+AVAIBLE_WEAPONS = Lista cu toate armele valabile/existente pentru blocare.
+BLOCKED_WEAPONS = Lista cu toate armele blocate
+WEAPON_NOTFOUND = Nu putem gasi arma '%s', scrie amx_cspum_keylist pentru lista cu toate armele valabile.
+WEAPON_NOTSPECIFIED = Te rugam sa fii mai specific cu arma pe care doriti sa o blocat/stergeti, scrieti amx_cspum_blockedlist / amx_cspum_keylist.
+ALREADY_SAVED = '%s' deja e salvata in lista.
+ALREADY_REMOVED = '%s' nu e inca salvata in lista
