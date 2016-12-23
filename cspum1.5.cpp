@@ -8,7 +8,7 @@
  
 
 new const PLUGIN[] = "CS Pick up manager", 
-	 VERSION[] = "1.4",  
+	 VERSION[] = "1.5",  
 	  AUTHOR[] = "Craxor";
 
 
@@ -193,7 +193,7 @@ public createmenu( id , level , cid )
 	{
 		if ( gKeyList[ i ][ 0 ] != EOS ) 
 		{ 
-			formatex( szBuffer, charsmax( szBuffer ) , gBlockWeapons[ i ] ? "[ BLOCKED ] %s" : "[FREE] %s ", gKeyList[ i ] );
+			formatex( szBuffer, charsmax( szBuffer ) , gBlockWeapons[ i ] ? "[ BLOCKED ] %s" : "[ FREE ] %s ", gKeyList[ i ] );
 			menu_additem( menu , szBuffer , gKeyList[ i ] , ADMIN_BAN );
 		}
 	}
@@ -212,13 +212,17 @@ public menu_handle( id , menu , item )
 		return PLUGIN_HANDLED;
 	}
 
-	new  szInfo[20], _acc, _callback, ItemName[20], szModelFile[ 12 + sizeof gModelFile  ];
+	new szInfo[20], _acc, _callback, ItemName[20], szModelFile[ 12 + sizeof gModelFile ], NewItemName[30];
+
 	menu_item_getinfo( menu , item , _acc , szInfo , charsmax( szInfo ), ItemName, charsmax( ItemName ) , _callback );
 
 	new iFoundIndex = GetWeaponIndex( id , szInfo, MenuKey );
 
 	formatex( szModelFile , charsmax( szModelFile ) , gModelFile , gKeyList[ iFoundIndex ] ); 
+	formatex( NewItemName , charsmax( NewItemName ) , !gBlockWeapons [ iFoundIndex ] ? "[ BLOCKED ] %s" : "[ FREE ] %s", szInfo );
 
+	menu_item_setname( menu , item , NewItemName );
+	
 
 	if( gBlockWeapons[ iFoundIndex ] )
 	{
@@ -237,14 +241,14 @@ public menu_handle( id , menu , item )
 			}
 		}
 	}
+
 	else
 	{
 		gBlockWeapons[ iFoundIndex ] = true;
 		nvault_set( gNewVault , szModelFile , "1" ); 
-
 	}
 	
-	menu_destroy( menu );
+	menu_display( id , menu , 0 );
 	return PLUGIN_HANDLED;
 }	
 
@@ -528,7 +532,7 @@ GetWeaponIndex( id , const szKeyword[] , FunctionType:Type )
 
 				case MenuKey:
 				{
-					client_print( id , print_center , !gBlockWeapons[ iFound ] ? "You blocked %s weapon" : "You deblocked %s weapon", gKeyList[ iFound ] );
+					client_print( id , print_center , "CSPick up manager list has been updated." );
 				}
 			}	
 		}
