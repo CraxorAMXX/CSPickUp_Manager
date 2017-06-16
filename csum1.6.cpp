@@ -157,11 +157,10 @@ public plugin_init( )
 
 
 	/*
-		cspum_team: Block pick-up only for specified team.
+		cspum_team: The only team who is allowed to pickup weapons even if is blocked
 			"1" - Terrorists.
 			"2" - Counter-Terrorists.
-			"3" - Spectators.
-			"4" - For all teams.
+			"Other Value" - No one.
 	*/
 	giTeamCvar = register_cvar( "cspum_team" , "3" );
 
@@ -459,7 +458,7 @@ public player_touch( ent , id )
 		iWeaponID = 0;
 	}
 
-	if( is_user_admin(id) && get_pcvar_num( giAdminsCvar ) || get_pcvar_num(giTeamCvar) != get_user_team(id) ) 
+	if( is_user_admin(id) && get_pcvar_num( giAdminsCvar ) || get_user_team(id) == get_pcvar_num(giTeamCvar) ) 
 	{ 	
 		iWeaponID = 0;
 	}
